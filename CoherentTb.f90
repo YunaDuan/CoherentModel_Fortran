@@ -6,35 +6,37 @@
 
 Function CoherentTb(z,temp,density)
 
+Use VariDefine
 Implicit None
-Use Module Varidefine
 
 Type(BrightnessTemperature)::CoherentTb
 REAL :: z(:),density(:),temperature(:)
-REAL :: theta_p(3)
-Integer:: Nl=Size(z)
-Integer::i,j,k
-REAL :: d(Nl-1),d1(Nl-1),fv(Nl), eps_p_reff(Nl),alpha(Nl),beta(Nl)
-REAL :: eps_pp_ice(Nl),eps_pp_reff(Nl),klz_p(Nl-1),klz_pp
-COMPLEX,Pointer:: mat(:,:)
-COMPLEX:: eps_eff(Nl),eps_reff(Nl-1)，kl(Nl-1),klz(Nl-1)
-COMPLEX:: r_hl,r_vl,V_hl(2,2),V_vl(2,2),A_B(2,1),C_D(2,1)
-COMPLEX::A(Nl-1),B(Nl-1),C(Nl-1),D(Nl-1),Tb_h(3,13),Tb_v(3,13)
-COMPLEX::T_h,T_v
-REAL :: k0,kx,kz0
-Parameter(b=1.0/3)
-parameter(eps_h=0.9974,eps_s=3.215)
+REAL,Dimension(3):: theta_p
+Integer:: i,j,k,Nl
+REAL :: klz_pp,k0,kx,kz0
+COMPLEX,Pointer,Dimension(:,:):: mat
+COMPLEX:: V_hl(2,2),V_vl(2,2),A_B(2,1),C_D(2,1),Tb_h(3,13),Tb_v(3,13)
+COMPLEX::T_h,T_v,r_hl,r_vl
+REAL,Parameter::b=1.0/3
+REAL,parameter::eps_h=0.9974,eps_s=3.215
 
 !At the Bottom
-REAL::T_bot = Ubound(temp),kz_pp_bot
-Parameter(eps_p_bot)= 3.17
-Parameter(eps_pp_bot)= 1.0e-4
-Complex :: eps_bot=(eps_p_bot,eps_pp_bot)
+REAL::T_bot,kz_pp_bot
+REAL,Parameter::eps_p_bot= 3.17
+REAL,Parameter::eps_pp_bot= 1.0e-4
+COMPLEX,Parameter :: eps_bot=(3.17,1.0e-4)
 Complex::kbot,kz_bot,r_h,r_v
 
+T_bot= Ubound(temp)
+Nl=Size(z)
 d=z(2:ubound(z))
 d1(1)=0;d1(2:ubound(d1))=d(1:ubound(d))
 
+!Allocate arries
+Allocate(d(Nl-1),d1(Nl-1),fv(Nl), eps_p_reff(Nl),alpha(Nl),beta(Nl))
+Allocate(eps_pp_ice(Nl),eps_pp_reff(Nl),klz_p(Nl-1))
+Allocate(eps_eff(Nl),eps_reff(Nl-1),kl(Nl-1),klz(Nl-1))
+Allocate(AA(Nl-1),BB(Nl-1),CC(Nl-1),DD(Nl-1))
 !Change observation angle from deg to rad
 theta_p=theta*PI/180
 
@@ -45,9 +47,9 @@ Do i=1,13
        kz0=sqrt(k0**2-kx**2)
        fv=density/917
 
-       IF( density<=400)
+       IF(sum(real(density<=400))/=0) THEN
          eps_p_reff=1+1.4667*fv+1.435*fv**3
-       else
+       ELSE
          eps_p_reff=((1-fv)*eps_h**b+fv*eps_s**b)**(1/b)
        End If
 
@@ -69,9 +71,6 @@ Do i=1,13
         Klz_pp = Real(Aimag(Klz))
 
         !At the Bottom
-        T_bot = temp(end);
-        eps_p_bot = 3.17;
-        eps_pp_bot = 1e-4;
         
         !Try to add water at the base, but to do so, the  eps_pp_bot should
         !be very large. And this version of the coherent modeldoes not with
@@ -122,10 +121,10 @@ Do i=1,13
         C_D=matmul(V_vl,mat)
         deallocate(mat)
 
-        A(1)=A_B(1)*exp((0,1)*Klz(1)*d(1))
-        B(1)=A_B(2)*exp((0,-1)*Klz(1)*d(1))
-        C(1)=C_D(1)*exp((0,1)*Klz(1)*d(1))
-        D(1)=C_D(2)*exp((0,-1)*Klz(1)*d(1))
+        AA(1)=A_B(1)*exp((0,1)*Klz(1)*d(1))
+        B(B1)=A_B(2)*exp((0,-1)*Klz(1)*d(1))
+        CC(1)=C_D(1)*exp((0,1)*Klz(1)*d(1))
+        DD(1)=C_D(2)*exp((0,-1)*Klz(1)*d(1))
 
         ! The other layers
 
@@ -149,10 +148,10 @@ Do i=1,13
            A_B=matmul(V_hl,A_B)
            C_D=matmul(V_vl,C_D)
            
-           A(k+1)=A_B(1)*exp((0,1)*Klz(k+1)*d(k+1))
-           B(k+1)=A_B(2)*exp((0,-1)*Klz(k+1)*d(k+1))
-           C(k+1)=C_D(1)*exp((0,1)*Klz(k+1)*d(k+1))      
-           D(k+1)=C_D(2)*exp((0,-1)*Klz(k+1)*d(k+1)) 
+           AA(k+1)=A_B(1)*exp((0,1)*Klz(k+1)*d(k+1))
+           BB(k+1)=A_B(2)*exp((0,-1)*Klz(k+1)*d(k+1))
+           CC(k+1)=C_D(1)*exp((0,1)*Klz(k+1)*d(k+1))      
+           DD(k+1)=C_D(2)*exp((0,-1)*Klz(k+1)*d(k+1)) 
          End Do
          deallocate(mat)
          
@@ -165,8 +164,32 @@ Do i=1,13
 
          !Add up Tb's
          Tb_h(j,i)=K0/cos(thet_p(i))*sum(Real(Aimag(eps_reff))/2*&
-         temp(2:ubound(Tpz))*(A*Conjg(A)/Klz_pp*(exp(2*Klz_pp*d)-exp(2*Klz_pp.*d1))-B.*conj(B)./Klz_pp.*(exp(-2*Klz_pp.*d)-exp(-2*Klz_pp.*d1))
+         temp(2:ubound(Tpz))*(A*Conjg(A)/Klz_pp*(exp(2*Klz_pp*d)-exp(2*&
+         Klz_pp*d1))-B*Conjg(B)/Klz_pp*(exp(-2*Klz_pp*d)-exp(-2*Klz_pp*d1))&
+         +(0,1)*A*Conjg(B)/Klz_p*(exp((0,-1)*2*Klz_p*d)-exp((0,-1)*2*&
+         Klz_p*d1))-(0,1)*B*Conjg(A)/Klz_p*(exp((0,1)*2*Klz_p*d)-exp((0,1)&
+         *2*Klz_p*d1))))+K0/cos(thet_p(t))*Real(Aimag(eps_bot))/2*T_bot&
+         /Kz_pp_bot*T_h*conjg(T_h)*exp(-2*Kz_pp_bot*d(Nl-1))
+
+         Tb_v(j,i)=K0/cos(thet_p(i))*sum(Real(Aimag(eps_reff)))/2*&
+         temp(2:ubound(Tpz))*(Klz*conjg(Klz)+Kx**2)/Kl/conjg(Kl)*&
+         (C*conjg(C)/Klz_pp*(exp(2*Klz_pp*d)-exp(2*Klz_pp*d1))&
+         D*conj(D)/Klz_pp*(exp(-2*Klz_pp*d)-exp(-2*Klz_pp*d1))&
+         +(Klz*conjg(Klz)-Kx**2)/(Klz*conjg(Klz)+Kx**2)*C*conjg(D)/(0,1)&
+         /Klz_p*(exp((0,-1)*2*Klz_p*d)-exp((0,-1)*2*Klz_p*d1))&
+         -(Klz*conjg(Klz)-Kx**2)/(Klz*conjg(Klz)+Kx**2)*D*conjg(C)/(0,1)&
+         /Klz_p*(exp((0,1)*2*Klz_p*d)-exp((0,1)*2*Klz_p*d1))))&
+       K0/cos(thet_p(t))*Real(Aimag(eps_bot))/2*T_bot*(Kz_bot*conjg(Kz_bot)&
+        +Kx**2)/Kz_pp_bot/K_bot/conjg(K_bot)*T_v*conjg(T_v)*exp(-2*&
+        Kz_pp_bot*d(Nl-1))        
   End Do
 End Do
 
-End Function CoherentModel
+!Tb_h0=1-abs(r_h)**2
+!Tb_v0=1-abs(r_v)**2
+
+CoherentTb.V = REAL(real(Tb_v))
+CoherentTb.H = REAL(real(Tb_h))
+CoherentTb.C=(CoherentTb.V+CoherentTb.H)/2
+
+End Function CoherentTb
