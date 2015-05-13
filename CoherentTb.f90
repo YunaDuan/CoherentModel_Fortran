@@ -7,6 +7,7 @@
 Function CoherentTb(z,temp,density)
 
 Use VariDefine
+
 Implicit None
 
 Type(BrightnessTemperature)::CoherentTb
@@ -174,15 +175,15 @@ Do i=1,13
          -exp((0,1)*2*Klz_p*d1))))+K0/cos(theta_p(j))*Real(Aimag(eps_bot))&
          /2*T_bot/Kz_pp_bot*T_h*conjg(T_h)*exp(-2*Kz_pp_bot*d(Nl-1))
 
-         Tb_v(j,i)=K0/cos(theta_p(j))*sum(Real(Aimag(eps_reff)))/2*&
+         Tb_v(j,i)=K0/cos(theta_p(j))*sum(Real(Aimag(eps_reff))/2*&
          temp(2:Nl)*(Klz*conjg(Klz)+Kx**2)/Kl/conjg(Kl)*&
-         CC*Conjg(CC)/klz_pp*(exp(2*klz_pp*d)-exp(2*klz_pp*d1))&
+         CC*Conjg(CC)/klz_pp*(exp(2*klz_pp*d)-exp(2*klz_pp*d1))-&
          DD*conjg(DD)/Klz_pp*(exp(-2*Klz_pp*d)-exp(-2*Klz_pp*d1))&
          +(Klz*conjg(Klz)-Kx**2)/(Klz*conjg(Klz)+Kx**2)*CC*conjg(DD)/(0,1)&
          /Klz_p*(exp((0,-1)*2*Klz_p*d)-exp((0,-1)*2*Klz_p*d1))&
          -(Klz*conjg(Klz)-Kx**2)/(Klz*conjg(Klz)+Kx**2)*DD*conjg(CC)/(0,1)&
-         /Klz_p*(exp((0,1)*2*Klz_p*d)-exp((0,1)*2*Klz_p*d1))&
-       K0/cos(thet_p(t))*Real(Aimag(eps_bot))/2*T_bot*(Kz_bot*conjg(Kz_bot)&
+         /Klz_p*(exp((0,1)*2*Klz_p*d)-exp((0,1)*2*Klz_p*d1)))+&
+       K0/cos(theta_p(j))*Real(Aimag(eps_bot))/2*T_bot*(Kz_bot*conjg(Kz_bot)&
         +Kx**2)/Kz_pp_bot/K_bot/conjg(K_bot)*T_v*conjg(T_v)*exp(-2*&
         Kz_pp_bot*d(Nl-1))        
   End Do

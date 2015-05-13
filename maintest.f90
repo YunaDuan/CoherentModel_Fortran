@@ -1,4 +1,7 @@
 Program testsubs
+
+Use VariDefine
+
 Implicit None
 Real :: T(8827),rho(8827),z(8827)
 Integer :: i
@@ -15,5 +18,6 @@ End Do
 
 Close(10);Close(20);Close(30)
 
-CoherentTb(z,T,rho)
+Call CoherentTb(z,T,rho)
+
 End Program testsubs
