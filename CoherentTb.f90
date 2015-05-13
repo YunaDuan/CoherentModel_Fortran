@@ -61,7 +61,7 @@ Do i=1,13
         eps_pp_ice=alpha/(freq(i)*1e-9)+beta*freq(i)*1e-9
         eps_pp_reff=eps_pp_ice*0.52*density/1e3+0.62*density/1e6
 
-        eps_eff=(eps_p_reff,eps_pp_reff) 
+        eps_eff=dcmplx(eps_p_reff,eps_pp_reff) 
         eps_reff=eps_eff(2:ubound(eps_eff))
 
         !lectromagnetic wavenumber in each layer
@@ -106,11 +106,12 @@ Do i=1,13
         !Recurrence Matrix
         !First layer
         Allocate(mat(2,2))
-        mat(1,1)=exp((0,-1)*Klz(1)*d(1));mat(2,1)=r_hl*exp((0,1)*Klz(1)*d(1)
-        mat(1,2)=r_hl*exp((0,-1)*Klz(1)*d(1);mat(2,2)=exp((0,1)*Klz(1)*d(1))
+        mat(1,1)=exp((0,-1)*Klz(1)*d(1));mat(2,1)=r_hl*exp((0,1)*Klz(1)*d(1))
+        mat(1,2)=r_hl*exp((0,-1)*Klz(1)*d(1))
+        mat(2,2)=exp((0,1)*Klz(1)*d(1))
         V_hl=1.0/2*(1+Kz0/Klz(1))*mat
-        mat(2,1)=r_vl*exp((0,1)*Klz(1)*d(1)
-        mat(1,2)=r_vl*exp((0,-1)*Klz(1)*d(1)
+        mat(2,1)=r_vl*exp((0,1)*Klz(1)*d(1))
+        mat(1,2)=r_vl*exp((0,-1)*Klz(1)*d(1))
         V_vl=1./2.*K0/Kl(1)*(1+eps_reff(1)*Kz0/Klz(1))*mat
         deallocate(mat)
 
@@ -122,14 +123,14 @@ Do i=1,13
         deallocate(mat)
 
         AA(1)=A_B(1)*exp((0,1)*Klz(1)*d(1))
-        B(B1)=A_B(2)*exp((0,-1)*Klz(1)*d(1))
+        BB(1)=A_B(2)*exp((0,-1)*Klz(1)*d(1))
         CC(1)=C_D(1)*exp((0,1)*Klz(1)*d(1))
         DD(1)=C_D(2)*exp((0,-1)*Klz(1)*d(1))
 
         ! The other layers
 
         Do k=1,Nl-2
-           r_hl=r_hl=(Klz(k+1)-Klz(k))/(Klz(k+1)+Klz(k))
+           r_hl=(Klz(k+1)-Klz(k))/(Klz(k+1)+Klz(k))
            r_vl=(eps_reff(k)*Klz(k+1)-eps_reff(k+1)*Klz(k))/(eps_reff(k)&
            *Klz(k+1)+eps_reff(k+1)*Klz(k));
            
@@ -155,7 +156,7 @@ Do i=1,13
          End Do
          deallocate(mat)
          
-         T_h=(B(Nl-1)*exp((0,1)*Klz(Nl-1)*d(Nl-1))-A(Nl-1)*&
+         T_h=(BB(Nl-1)*exp((0,1)*Klz(Nl-1)*d(Nl-1))-A(Nl-1)*&
          exp((0,-1)*Klz(Nl-1)*d(Nl-1)))*Klz(Nl-1)/Kz_bot&
          *exp((0,-1)*Kz_bot*d(Nl-1))
          T_v=(D(Nl-1)*exp((0,1)*Klz(Nl-1)*d(Nl-1))-C(Nl-1)*&

@@ -8,3 +8,5 @@ CFLAGS=
 LFLAGS=
 RunCoherentModel : *.f90
 	$(F90) $(CFLAGS) -o $@ $^
+clean:
+	rm -f *.o *.mod
