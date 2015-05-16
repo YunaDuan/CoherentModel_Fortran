@@ -1,4 +1,4 @@
-Program testsubs
+Program maintest
 
 Use VariDefine
 
@@ -20,4 +20,4 @@ Close(10);Close(20);Close(30)
 
 Call CoherentTb(z,T,rho)
 
-End Program testsubs
+End Program maintest
