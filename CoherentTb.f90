@@ -3,16 +3,16 @@
 !Yuna Duan May 8th
 !Input: temperature [K]; density [kgm-3] 
 !       z denpth of the layer [m]
+!Note:the defination of Nl is different with the matlab version for 
+!reasons I don't remember now.
 
-Function CoherentTb(z,temp,density)
+Subroutine CoherentTb
 
 Use VariDefine
-
 Implicit None
 
-Type(BrightnessTemperature)::CoherentTb
+REAL,Dimension(3,13)::TbH,TbV,TbC !Output
 
-REAL :: z(:),density(:),temp(:)
 REAL,Dimension(3):: theta_p
 Integer:: i,j,k,Nl
 REAL :: k0,kx,kz0
@@ -29,11 +29,11 @@ REAL,Parameter::eps_pp_bot= 1.0e-4
 COMPLEX,Parameter :: eps_bot=(3.17,1.0e-4)
 Complex::K_bot,kz_bot,r_h,r_v
 
-Nl=Size(z)
+Nl=Size(z,1)
 
 !Allocate arries
 Allocate(d(Nl-1),d1(Nl-1),fv(Nl), eps_p_reff(Nl),alpha(Nl),beta(Nl))
-Allocate(eps_pp_ice(Nl),eps_pp_reff(Nl),klz_p(Nl-1),klz_pp(Nl-1))
+Allocate(eps_pp_ice(Nl),eps_pp_reff(Nl),klz_p(Nl-1),klz_pp(Nl-1),thet(Nl))
 Allocate(eps_eff(Nl),eps_reff(Nl-1),kl(Nl-1),klz(Nl-1))
 Allocate(AA(Nl-1),BB(Nl-1),CC(Nl-1),DD(Nl-1))
 !Change observation angle from deg to rad
@@ -43,26 +43,30 @@ T_bot=temp(Nl)
 d=z(2:Nl)
 d1(1)=0;d1(2:Nl-1)=d(1:Nl-2)
 
+fv=density/917
+       
+IF(MaxVal(density)<=400) THEN
+  eps_p_reff=1+1.4667*fv+1.435*fv**3
+ELSE
+  eps_p_reff=((1-fv)*eps_h**b+fv*eps_s**b)**(1/b)
+End If
+
+!Imaginary ice permittivity from Matzler in the DMRT-ML paper
+thet=300/temp-1
+alpha=(0.00504+0.0062*thet)*Exp(-22.1*thet)
+
 Do i=1,13
   Do j=1,3
        K0=2.0*PI/(3.0e8)*frequency(i)! Electromagnetic wavenumber
        kx=k0*sin(theta_p(j))!horizontal component of the wavenumber
        kz0=sqrt(k0**2-kx**2)
-       fv=density/917
-
-       IF(MaxVal(density)<=400) THEN
-         eps_p_reff=1+1.4667*fv+1.435*fv**3
-       ELSE
-         eps_p_reff=((1-fv)*eps_h**b+fv*eps_s**b)**(1/b)
-       End If
-
-        !Imaginary ice permittivity from Matzler in the DMRT-ML paper
-        alpha=0.00504+0.0062*(300.0/temp-1)*Exp(-22.1*(300.0/temp-1))
+        
+       !Imaginary ice permittivity from Matzler in the DMRT-ML paper
         beta=0.0207/temp*Exp(335.0/temp)/(Exp(335.0/temp)-1)**2+1.16e-11&
         *(frequency(i)*1e-9)**2+exp(-9.963+0.0372*(temp-273.16))
         
         eps_pp_ice=alpha/(frequency(i)*1e-9)+beta*frequency(i)*1e-9
-        eps_pp_reff=eps_pp_ice*0.52*density/1e3+0.62*density/1e6
+        eps_pp_reff=eps_pp_ice*(0.52*density/1e3+0.62*(density/1e3)**2)
 
         eps_eff=dcmplx(eps_p_reff,eps_pp_reff) 
         eps_reff=eps_eff(2:Nl)
@@ -82,12 +86,12 @@ Do i=1,13
         K_bot = sqrt(eps_bot)*K0
         Kz_bot = sqrt(K_bot**2 - Kx**2)
         Kz_pp_bot = REAL(Aimag(Kz_bot))
-
+        
         !Bottom Reflection coefficients
         r_h=(Klz(Nl-1)-Kz_bot)/(Klz(Nl-1)+Kz_bot)
         r_v=(eps_bot*Klz(Nl-1)-eps_reff(Nl-1)*Kz_bot)/(eps_bot*Klz(Nl-1)&
         +eps_reff(Nl-1)*Kz_bot)
-
+        
         !Find surface reflection coeff
         !reflection coefficients on the bottom already calculated
         Do k=Nl-2,1,-1
@@ -101,21 +105,30 @@ Do i=1,13
             r_v=(r_v*exp((0,1)*2*Klz(k+1)*(d(k+1)-d(k)))+r_vl)/(r_v*&
                 exp((0,1)*2*Klz(k+1)*(d(k+1)-d(k)))*r_vl+1);
         End Do
+        r_hl=(Kz0-Klz(1))/(Kz0+Klz(1))
+        r_vl=(eps_reff(1)*Kz0-Klz(1))/(eps_reff(1)*Kz0+Klz(1))
 
+        r_h=(r_h*exp((0,1)*2*Klz(1)*d(1))+r_hl)/(r_h*exp((0,1)*2*&
+        Klz(1)*d(1))*r_hl+1)
+
+        r_v=(r_v*exp((0,1)*2*Klz(1)*d(1))+r_vl)/(r_v*exp((0,1)*2*&
+        Klz(1)*d(1))*r_vl+1)
+        
         !Calculate up/down going amps in each region
         r_hl=(Klz(1)-Kz0)/(Klz(1)+Kz0)
         r_vl=(Klz(1)-eps_reff(1)*Kz0)/(Klz(1)+eps_reff(1)*Kz0)
-
+        
         !Recurrence Matrix
         !First layer
         Allocate(mat(2,2))
-        mat(1,1)=exp((0,-1)*Klz(1)*d(1));mat(2,1)=r_hl*exp((0,1)*Klz(1)*d(1))
+        mat(1,1)=exp((0,-1)*Klz(1)*d(1))
+        mat(2,1)=r_hl*exp((0,1)*Klz(1)*d(1))
         mat(1,2)=r_hl*exp((0,-1)*Klz(1)*d(1))
         mat(2,2)=exp((0,1)*Klz(1)*d(1))
-        V_hl=1.0/2*(1+Kz0/Klz(1))*mat
+        V_hl=1.0/2.0*(1+Kz0/Klz(1))*mat
         mat(2,1)=r_vl*exp((0,1)*Klz(1)*d(1))
         mat(1,2)=r_vl*exp((0,-1)*Klz(1)*d(1))
-        V_vl=1./2.*K0/Kl(1)*(1+eps_reff(1)*Kz0/Klz(1))*mat
+        V_vl=1.0/2.0*K0/Kl(1)*(1+eps_reff(1)*Kz0/Klz(1))*mat
         deallocate(mat)
 
         allocate(mat(2,1))
@@ -129,9 +142,8 @@ Do i=1,13
         BB(1)=A_B(2,1)*exp((0,-1)*Klz(1)*d(1))
         CC(1)=C_D(1,1)*exp((0,1)*Klz(1)*d(1))
         DD(1)=C_D(2,1)*exp((0,-1)*Klz(1)*d(1))
-
+        
         ! The other layers
-
         Do k=1,Nl-2
            r_hl=(Klz(k+1)-Klz(k))/(Klz(k+1)+Klz(k))
            r_vl=(eps_reff(k)*Klz(k+1)-eps_reff(k+1)*Klz(k))/(eps_reff(k)&
@@ -158,7 +170,6 @@ Do i=1,13
            DD(k+1)=C_D(2,1)*exp((0,-1)*Klz(k+1)*d(k+1)) 
          End Do
          deallocate(mat)
-         
          T_h=(BB(Nl-1)*exp((0,1)*Klz(Nl-1)*d(Nl-1))-AA(Nl-1)*&
          exp((0,-1)*Klz(Nl-1)*d(Nl-1)))*Klz(Nl-1)/Kz_bot&
          *exp((0,-1)*Kz_bot*d(Nl-1))
@@ -176,23 +187,36 @@ Do i=1,13
          /2*T_bot/Kz_pp_bot*T_h*conjg(T_h)*exp(-2*Kz_pp_bot*d(Nl-1))
 
          Tb_v(j,i)=K0/cos(theta_p(j))*sum(Real(Aimag(eps_reff))/2*&
-         temp(2:Nl)*(Klz*conjg(Klz)+Kx**2)/Kl/conjg(Kl)*&
-         CC*Conjg(CC)/klz_pp*(exp(2*klz_pp*d)-exp(2*klz_pp*d1))-&
+        temp(2:Nl)*(Klz*conjg(Klz)+Kx**2)/Kl/conjg(Kl)*&
+         (CC*Conjg(CC)/klz_pp*(exp(2*klz_pp*d)-exp(2*klz_pp*d1))-&
          DD*conjg(DD)/Klz_pp*(exp(-2*Klz_pp*d)-exp(-2*Klz_pp*d1))&
          +(Klz*conjg(Klz)-Kx**2)/(Klz*conjg(Klz)+Kx**2)*CC*conjg(DD)/(0,1)&
          /Klz_p*(exp((0,-1)*2*Klz_p*d)-exp((0,-1)*2*Klz_p*d1))&
          -(Klz*conjg(Klz)-Kx**2)/(Klz*conjg(Klz)+Kx**2)*DD*conjg(CC)/(0,1)&
-         /Klz_p*(exp((0,1)*2*Klz_p*d)-exp((0,1)*2*Klz_p*d1)))+&
+         /Klz_p*(exp((0,1)*2*Klz_p*d)-exp((0,1)*2*Klz_p*d1))))+&
        K0/cos(theta_p(j))*Real(Aimag(eps_bot))/2*T_bot*(Kz_bot*&
-       conjg(Kz_bot)&+Kx**2)/Kz_pp_bot/K_bot/conjg(K_bot)*T_v*conjg(T_v)*&
+       conjg(Kz_bot)+Kx**2)/Kz_pp_bot/K_bot/conjg(K_bot)*T_v*conjg(T_v)*&
        exp(-2*Kz_pp_bot*d(Nl-1))        
-  End Do
+ End Do
 End Do
-
 !Tb_h0=1-abs(r_h)**2
 !Tb_v0=1-abs(r_v)**2
-CoherentTb%H = REAL(real(Tb_h))
-CoherentTb%V = REAL(real(Tb_v))
-CoherentTb%C=(CoherentTb%V+CoherentTb%H)/2
+TbH = REAL(real(Tb_h))
+TbV = REAL(real(Tb_v))
+TbC=(TbH+TbV)/2
 
-End Function CoherentTb
+print*,'H-polarization'
+DO i=1,13
+        WRITE(*,*)TbH(:,i)
+END DO
+
+print*,'V-polarization'
+DO i=1,13
+        WRITE(*,*)TbV(:,i)
+END DO
+
+PRINT*,'Average over H & C'
+DO i=1,13
+        WRITE(*,*)TbC(:,i)
+END DO
+End Subroutine CoherentTb

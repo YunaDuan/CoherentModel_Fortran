@@ -1,4 +1,10 @@
 #!/bin/sh
-gfortran -c GetCMInput.f90
-gfortran GetCMInput.o maintest.f90 -o test2.out
-./test2.out	
+make veryclean
+gfortran -c Varidefine.f90
+gfortran -c CoherentTb.f90
+gfortran Varidefine.o CoherentTb.o maintest.f90 -o maintest	
+
+
+
+
+
