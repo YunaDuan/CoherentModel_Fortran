@@ -4,6 +4,9 @@ Use VariDefine
 Implicit None
 
 Integer :: i
+!REAL,Pointer,Dimension(:)::temp,density,z
+REAL:: COUNTI,COUNTF
+
 Open(10,File='dat/T.dat',Status='old')
 Open(20,File='dat/z.dat',Status='old')
 Open(30,File='dat/rho.dat',Status='old')
@@ -16,6 +19,10 @@ Do i=1,8827
 End Do
 
 Close(10);Close(20);Close(30)
-Call CoherentTb
+Call CPU_TIME(COUNTI)
+Call CoherentTb(temp,density,z)
+Call CPU_TIME(COUNTF)
+print '("Time = ",f6.3," seconds.")',COUNTF-COUNTI
 deallocate(temp,density,z)
+
 End Program maintest

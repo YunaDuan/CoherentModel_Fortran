@@ -11,11 +11,14 @@ Subroutine CoherentTb
 Use VariDefine
 Implicit None
 
-REAL,Dimension(3,13)::TbH,TbV,TbC !Output
-
+!REAL,Dimension(:)::temp,density,z!Input
+! Varibale define
 REAL,Dimension(3):: theta_p
 Integer:: i,j,k,Nl
 REAL :: k0,kx,kz0
+REAL,Pointer,Dimension(:)::d,d1,klz_p,klz_pp,fv,eps_p_reff,thet,alpha,beta,&
+eps_pp_ice,eps_pp_reff 
+COMPLEX,Pointer,Dimension(:)::eps_eff,eps_reff,kl,klz,AA,BB,CC,DD
 COMPLEX,Pointer,Dimension(:,:):: mat
 COMPLEX:: V_hl(2,2),V_vl(2,2),A_B(2,1),C_D(2,1),Tb_h(3,13),Tb_v(3,13)
 COMPLEX::T_h,T_v,r_hl,r_vl
@@ -205,18 +208,4 @@ TbH = REAL(real(Tb_h))
 TbV = REAL(real(Tb_v))
 TbC=(TbH+TbV)/2
 
-print*,'H-polarization'
-DO i=1,13
-        WRITE(*,*)TbH(:,i)
-END DO
-
-print*,'V-polarization'
-DO i=1,13
-        WRITE(*,*)TbV(:,i)
-END DO
-
-PRINT*,'Average over H & C'
-DO i=1,13
-        WRITE(*,*)TbC(:,i)
-END DO
 End Subroutine CoherentTb

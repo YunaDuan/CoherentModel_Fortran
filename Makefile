@@ -12,11 +12,13 @@ PROGRAMS = maintest
 all: $(PROGRAMS)
 
 #the rules
-maintest.o:varidefine.o
-maintest:varidefine.o
+maintest.o:Varidefine.o
+maintest:Varidefine.o
 maintest:CoherentTb.o
-CoherentTb.o:varidefine.o
-CoherentTb:varidefine.o
+
+CoherentTb.o:Varidefine.o
+CoherentTb:Varidefine.o
+
 
 #General rule for building prog from prog.o
 %: %.o

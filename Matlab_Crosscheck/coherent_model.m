@@ -1,5 +1,6 @@
 %function [Tb_V,Tb_H,Tb] = coherent_model(Input_param)
 % Calculation of the Brightness Temperature with the coherent model
+tic4.
 load('Input_param3.mat')
 z = Input_param.depth ;
 density = Input_param.density_profile ;
@@ -173,5 +174,6 @@ Tb_V = real(Tb_v);
 Tb_H = real(Tb_h);
 
 Tb = (Tb_V+Tb_H)./2;
+toc
 return
 

@@ -14,10 +14,7 @@ Real,Parameter,Dimension(3)::theta=(/0.0,40.0,50.0/)
 ! Computation constant
 REAL,Parameter::PI=3.14159
 
-!Variables for CoherentTb.f90
-REAL,Pointer,Dimension(:)::d,d1,klz_p,klz_pp,fv,eps_p_reff,thet,alpha,beta,&
-eps_pp_ice,eps_pp_reff
-COMPLEX,Pointer,Dimension(:)::eps_eff,eps_reff,kl,klz,AA,BB,CC,DD
-
-REAL,Pointer,Dimension(:)::temp,density,z
+! Pointers for passing the values 
+REAL,Pointer,Dimension(:)::temperature,density,z
+REAL,Dimension(3,13)::TbH,TbV,TbC
 End Module 
