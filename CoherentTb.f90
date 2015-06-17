@@ -6,7 +6,7 @@
 !Note:the defination of Nl is different with the matlab version for 
 !reasons I don't remember now.
 
-Subroutine CoherentTb
+Subroutine CoherentTb(z,density,temp)
 
 Use VariDefine
 Implicit None
@@ -206,6 +206,5 @@ End Do
 !Tb_v0=1-abs(r_v)**2
 TbH = REAL(real(Tb_h))
 TbV = REAL(real(Tb_v))
-TbC=(TbH+TbV)/2
 
 End Subroutine CoherentTb

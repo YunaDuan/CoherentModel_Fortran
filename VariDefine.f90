@@ -15,6 +15,5 @@ Real,Parameter,Dimension(3)::theta=(/0.0,40.0,50.0/)
 REAL,Parameter::PI=3.14159
 
 ! Pointers for passing the values 
-REAL,Pointer,Dimension(:)::temperature,density,z
-REAL,Dimension(3,13)::TbH,TbV,TbC
+REAL,Dimension(3,13)::TbH,TbV
 End Module 
