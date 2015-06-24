@@ -6,11 +6,12 @@ Subroutine DensityRealization(z,std,lc,N,seed,rhoR)
 
 Implicit None
 
-Real,Dimension(:)::z,randnoise
-Real,Pointer,Dimension(:,;)::c,sigma,rhoR,rhoRall,T
-Real,Pointer,Dimension(:)rhostd,rhobar
-Real::std
-Integer::Nly,i,j,N
+Real,Dimension(:) :: z
+Real,Dimension(:),Allocatable :: randnoise
+Real,Pointer,Dimension(:,:) :: c,sigma,rhoR,rhoRall,T
+Real,Pointer,Dimension(:) :: rhostd,rhobar
+Real::std,lc
+Integer::Nly,i,j,N,seed
 REAL,Parameter::p1=359.7430,p2=42.4020!trend parameters
 REAL,Parameter::p3=38.2273!anomaly parameter
 
@@ -50,7 +51,12 @@ rhoRall=RESHAPE(randnoise,(/N,Nly/))
 rhoRall=matmul(rhoRall,T)+rhobar
 
 Do i=1,N
-   Forall(z<=100)RhoR(i,z)=RhoRall(i,z)
+!   Forall(z<=100)RhoR(i,z)=RhoRall(i,z)
+  Do j=1,Nly
+    If (z(i)<=100) Then
+      RhoR(i,j)=RhoRall(i,j)
+    End If
+  End Do
 End Do
 
 End Subroutine
