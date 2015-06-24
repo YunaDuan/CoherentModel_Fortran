@@ -11,13 +11,14 @@ Implicit None
 
 !1.Define variables
 REAL,Dimension(3)::G
-REAL,Pointer,Dimension(:)::H,M,Ts
+REAL,Pointer,Dimension(:)::H,M,Ts,temperature
 REAL,Pointer,Dimension(:)::z,temp
 REAL,Pointer,Dimension(:,:)density
-REAL,Pointer,Dimension(:,:,:)temperature
-Integer::Nly,i,j,k,m,n,q
-Real::Tsm,Mm
-Integer,Parameter::PointNum=47
+REAL,Dimension(3,13)::TbH,TbV,TbHm,TbVm 
+Integer::Nly,i,j,k,m,q,r
+
+Integer,Parameter::PointNum=47,N=500
+Real,Parameter::lc=0.4396
 Integer,Parameter,Dimension(3)::std=(/20,40,60/)
 
 Allocate(H(PointNum),M(PointNum),Ts(PointNum))
@@ -37,41 +38,37 @@ DO i=1,PointNum
 END DO
 
 close(10);close(20);close(30)
-Tsm=sum(Ts)/PointNum;!mean Ts for density model
-Mm=sum(M)/PointNmu!mean accumulation rate for density model
 
 Ts=Ts-3 !Temperature offset
 !3.Calculate Tb for different setting of parameters
 DO i=1,PointNum
+  TbHm=0.0
+  TbVm=0.0      
   print*,'Running point',i,'/',PointNum !time step
   !3.1 get grid of layers
   CALL Getgrid(H(i),z)
-  Nly=size(GetGrid,1)
-  Allocate(temperature(Nly),temperature(Nl,3,3),temp(Nl),density(Nly))
-  
+  Nly=size(z,1)
+  Allocate(temperature(Nly),density(N,Nly))
   !3.2 calculate temperature profile 
   DO j=1,3 !geothermal heatflux
     DO k=1,3 !surface temperature
       Ts(i)=Ts(i)+(k-1)*3 !make dTs varies from -3 to 0 and 3
-      CALL TempProfile(Ts(i),G(j),H(i),(H(i)-Getgrid),M(i),temp)
-      temperature(:,k,j)=tempe
+      CALL TempProfile(Ts(i),G(j),H(i),(H(i)-z),M(i),temperature)
+      Di m=1,3
+        CALL DensityRealization(z,std(m),lc,N,1,density)
+        DO q=1,N
+          CALL CoherentTb(z,density(q,:),temperature,TbH,TbV)
+          TbHm=TbHm+TbH
+          TbVm=TbVm+TbV
+        END DO        
+      END DO
     END DO
     Ts(i)=Ts(i)-6 
   END DO
-  
-  !3.3 density profile
-  !    According to Ken's presentation, the variation of density is small
-  !    due to the change of input. So a single density profile is used which
-  !    ignores all the possible change due with different inputs.
-
-      CALL HLDensity(z,Tsm,Mm,temp)
-
-      DO m=1,3 !different standard deviation
-        
-        CALL CoherentTb
-        CALL WriteOutput
-      END DO
-Deallocate(temperature,temp,densite,z)
+  TbHm=TbHm/N;
+  TbVM=TbVm/N;
+  CALL WriteOutput
+  Deallocate(z,density,temperature)  
 END DO
 End Program RunCoherentModel_v1
 

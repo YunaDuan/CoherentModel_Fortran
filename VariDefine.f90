@@ -14,6 +14,4 @@ Real,Parameter,Dimension(3)::theta=(/0.0,40.0,50.0/)
 ! Computation constant
 REAL,Parameter::PI=3.14159
 
-! Pointers for passing the values 
-REAL,Dimension(3,13)::TbH,TbV
 End Module 

@@ -6,12 +6,14 @@
 !Note:the defination of Nl is different with the matlab version for 
 !reasons I don't remember now.
 
-Subroutine CoherentTb(z,density,temp)
+Subroutine CoherentTb(z,density,temp,TbH,TbV)
 
 Use VariDefine
 Implicit None
 
-!REAL,Dimension(:)::temp,density,z!Input
+REAL,Dimension(:)::temp,density,z!Input
+REAL,Dimension(3,13)::TbH,TbV !Output
+
 ! Varibale define
 REAL,Dimension(3):: theta_p
 Integer:: i,j,k,Nl
