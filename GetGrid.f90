@@ -8,11 +8,10 @@ Implicit None
 
 REAL::H
 INTEGER::Nly,i
-Real,Pointer,Dimension(:)::z
+Real,Dimension(:)::z
 
 IF(H<=999) THEN
-  Nly=(INT(H)-100)/0.5+1+10000
-  Allocate(z(Nly))
+  Nly=INT((INT(H)-100)/0.5+1+10000)
   DO i=1,10000
     z(i)=(i-1)*0.01
   END DO
@@ -21,8 +20,7 @@ IF(H<=999) THEN
     z(i)=100+(i-10000-1)*0.5
   END DO
 ELSE 
-  Nly=11799+(INT(H)-1000)+1
-  Allocate(z(Nly))
+  Nly=INT(11799+(INT(H)-1000)+1)
   DO i=1,10000
     z(i)=(i-1)*0.01
   END DO

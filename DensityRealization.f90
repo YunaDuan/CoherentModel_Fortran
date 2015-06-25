@@ -8,16 +8,15 @@ Implicit None
 
 Real,Dimension(:) :: z
 Real,Dimension(:),Allocatable :: randnoise
-Real,Pointer,Dimension(:,:) :: c,sigma,rhoR,rhoRall,T
-Real,Pointer,Dimension(:) :: rhostd,rhobar
+Real,Pointer,Dimension(:,:) :: c,sigma,rhoR,rhoRall,T,rhostd,rhobar
 Real::std,lc
 Integer::Nly,i,j,N,seed
 REAL,Parameter::p1=359.7430,p2=42.4020!trend parameters
 REAL,Parameter::p3=38.2273!anomaly parameter
 
 
-Nly=size(rhobar,1)
-Allocate(rhobar(Nly),c(Nly,Nly),sigma(Nly,Nly),rhostd(Nly),)
+Nly=size(z,1)
+Allocate(rhobar(Nly,1),c(Nly,Nly),sigma(Nly,Nly),rhostd(Nly,1),)
 Allocate(rhoRall(N,Nly),T(Nly,Nly),randnoise(N*Nly))
 
 ! coveriance matrix
@@ -30,16 +29,16 @@ End DO
 
 !The smooth density profile by Pearce and Walker Model
 !CALL HLDensity if using The Herron-longway model(see the HLDensity.f90)
-rhobar=(p1-917)*exp(-z/p2)+917
+rhobar(:,1)=(p1-917)*exp(-z/p2)+917
 
 !initial standard deviation 
 !The std decay model parameter is fitted from twicker data
 c=exp(-c/lc)
-rhostd=std*exp(-z/p3)
-sigma=DOT_PRODUCT(matmul(rhostd,TRANSPOSE(rhostd)),c)
+rhostd(:,1)=std*exp(-z/p3)
+sigma=matmul(rhostd,TRANSPOSE(rhostd))*c
 
 Do i=1,N
-   RhoR(i,:)=rhobar
+   RhoR(i,:)=rhobar(i,:)
 End Do
 
 !Add the correlated random noise
@@ -51,7 +50,6 @@ rhoRall=RESHAPE(randnoise,(/N,Nly/))
 rhoRall=matmul(rhoRall,T)+rhobar
 
 Do i=1,N
-!   Forall(z<=100)RhoR(i,z)=RhoRall(i,z)
   Do j=1,Nly
     If (z(i)<=100) Then
       RhoR(i,j)=RhoRall(i,j)

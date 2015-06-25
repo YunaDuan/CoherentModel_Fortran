@@ -13,9 +13,9 @@ Implicit None
 REAL,Dimension(3)::G
 REAL,Pointer,Dimension(:)::H,M,Ts,temperature
 REAL,Pointer,Dimension(:)::z,temp
-REAL,Pointer,Dimension(:,:)density
+REAL,Pointer,Dimension(:,:)::density
 REAL,Dimension(3,13)::TbH,TbV,TbHm,TbVm 
-Integer::Nly,i,j,k,m,q,r
+Integer::Nly,i,j,k,q,r
 
 Integer,Parameter::PointNum=47,N=500
 Real,Parameter::lc=0.4396
@@ -54,10 +54,10 @@ DO i=1,PointNum
     DO k=1,3 !surface temperature
       Ts(i)=Ts(i)+(k-1)*3 !make dTs varies from -3 to 0 and 3
       CALL TempProfile(Ts(i),G(j),H(i),(H(i)-z),M(i),temperature)
-      Di m=1,3
-        CALL DensityRealization(z,std(m),lc,N,1,density)
-        DO q=1,N
-          CALL CoherentTb(z,density(q,:),temperature,TbH,TbV)
+      DO q=1,3
+        CALL DensityRealization(z,std(q),lc,N,1,density)
+        DO r=1,N
+          CALL CoherentTb(z,density(r,:),temperature,TbH,TbV)
           TbHm=TbHm+TbH
           TbVm=TbVm+TbV
         END DO        

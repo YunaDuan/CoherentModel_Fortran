@@ -7,12 +7,13 @@ Subroutine TempProfile(Ts,G,H,zh,M,temperature)
 Use VariDefine
 Implicit None
 
-REAL::Ts,G,H,S,M
+REAL::Ts,G,H,M
 REAL,Dimension(:)::zh,temperature
-REAL,Pointer,Dimension(:)erf1
+REAL,Pointer,Dimension(:)::erf1
 REAL,Parameter::kappa=2.70!thermal conductivity
 REAL,Parameter::k=45      !thermal diffusivity
 REAL::q,b,coef,erf2
+Integer::Nl
 
 Nl=size(Zh,1)
 allocate(erf1(Nl))
