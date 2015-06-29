@@ -4,23 +4,25 @@
 ! Output: density with exponentially decay noise -RhoR [g/cm3] 
 Subroutine DensityRealization(z,std,lc,N,seed,rhoR)
 
+Use VariDefine
 Implicit None
 
-Real,Dimension(:) :: z
-Real,Dimension(:),Allocatable :: randnoise
-Real,Pointer,Dimension(:,:) :: c,sigma,rhoR,rhoRall,T,rhostd,rhobar
-Real::std,lc
-Integer::Nly,i,j,N,seed
+Real,Dimension(Layer_Num),Intent(in) :: z
+Real,Intent(in)::std,lc
+Integer,Intent(in)::N,seed
+Real,Intent(out)::rhoR(N,Layer_Num)
+
+Real,Pointer,Dimension(:,:) :: c,sigma,rhoRall,T,rhostd,rhobar,randnoise
+Integer::i,j
 REAL,Parameter::p1=359.7430,p2=42.4020!trend parameters
 REAL,Parameter::p3=38.2273!anomaly parameter
 
-
-Nly=size(z,1)
-Allocate(rhobar(Nly,1),c(Nly,Nly),sigma(Nly,Nly),rhostd(Nly,1),)
-Allocate(rhoRall(N,Nly),T(Nly,Nly),randnoise(N*Nly))
+Allocate(rhobar(Layer_Num,1),c(Layer_Num,Layer_Num))
+Allocate(sigma(Layer_Num,Layer_Num),rhostd(Layer_Num,1))
+Allocate(rhoRall(N,Layer_Num),T(Layer_Num,Layer_Num),randnoise(N,Layer_Num))
 
 ! coveriance matrix
-Do i=1,Nly
+Do i=1,Layer_Num
   Do j=1,i
      c(i,j)=abs(z(i)-z(j))
      c(j,i)=c(i,j)
@@ -38,20 +40,16 @@ rhostd(:,1)=std*exp(-z/p3)
 sigma=matmul(rhostd,TRANSPOSE(rhostd))*c
 
 Do i=1,N
-   RhoR(i,:)=rhobar(i,:)
+   RhoR(i,:)=rhobar(:,1)
 End Do
 
 !Add the correlated random noise
-!Since the sigma here is a square matrix, the steps for checking in mvnrd
-!is skipped for efficiency
-CALL CHOLESKY(sigma,T,Nly)
-CALL RAND_NORMAL(N*Nly,randnoise,seed)
-rhoRall=RESHAPE(randnoise,(/N,Nly/))
-rhoRall=matmul(rhoRall,T)+rhobar
+
+CALL MVNRND(rhobar,sigma,rhoRall,N,Layer_Num,1,Layer_Num,Layer_Num,1)
 
 Do i=1,N
-  Do j=1,Nly
-    If (z(i)<=100) Then
+  Do j=1,Layer_Num
+    If (z(j)<=100) Then
       RhoR(i,j)=RhoRall(i,j)
     End If
   End Do

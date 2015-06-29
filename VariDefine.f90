@@ -14,4 +14,7 @@ Real,Parameter,Dimension(3)::theta=(/0.0,40.0,50.0/)
 ! Computation constant
 REAL,Parameter::PI=3.14159
 
+! Common Variables for passing the values
+Integer::Layer_Num !number of layer
+
 End Module 
