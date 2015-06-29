@@ -11,8 +11,8 @@ PROGRAMS = test1
 all: $(PROGRAMS)
 
 test1:tempProfile.o
-tempProfile:Varidefine.o
-tempProfile.o:Varidefine.o
+tempProfile:VariDefine.o
+tempProfile.o:VariDefine.o
 
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)

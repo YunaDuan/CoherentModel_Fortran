@@ -9,8 +9,10 @@ Integer,Parameter::PointNum=47,N=500
 REAL,Dimension(5)::temperature,zh
 zh=(/0,10,20,30,40/)
 temperature=0
+
 CALL tempProfile(280,0.4,3027,zh,0.5,temperature)
 print*,temperature
+
 !CALL GetLayerNumber(H,Nly)
 !print*,Nly
 !CALL Getgrid(H,z)

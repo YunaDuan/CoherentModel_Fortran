@@ -8,7 +8,7 @@ Use VariDefine
 Implicit None
 
 REAL::Ts,G,H,M
-REAL,Dimension(:)::zh,temperature
+REAL,Dimension(5)::zh,temperature
 REAL,Pointer,Dimension(:)::erf1
 REAL,Parameter::kappa=2.70!thermal conductivity
 REAL,Parameter::k=45      !thermal diffusivity
@@ -24,7 +24,9 @@ b=sqrt(PI)/2/kappa
 coef=G*b/q
 
 erf1=ERF(zh*q)
+
 erf2=ERF(H*q)
+
 temperature=Ts-coef*(erf1-erf2)
 
 End Subroutine 
