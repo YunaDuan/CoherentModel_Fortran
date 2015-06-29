@@ -4,22 +4,23 @@
 
 Subroutine GetGrid(H,z)
 
-Use VariDefine
 Implicit None
 
 REAL::H
-INTEGER::i
-Real,Dimension(Layer_Num)::z
+INTEGER::Nly,i
+Real,Dimension(:)::z
 
 IF(H<=999) THEN
+  Nly=INT((INT(H)-100)/0.5+1+10000)
   DO i=1,10000
     z(i)=(i-1)*0.01
   END DO
   
-  DO i=10001,Layer_Num
+  DO i=10001,Nly
     z(i)=100+(i-10000-1)*0.5
   END DO
 ELSE 
+  Nly=INT(11799+(INT(H)-1000)+1)
   DO i=1,10000
     z(i)=(i-1)*0.01
   END DO
@@ -28,7 +29,7 @@ ELSE
     z(i)=100+(i-10000-1)*0.5
   END DO
 
-  DO i=11800,Layer_Num
+  DO i=11800,Nly
     z(i)=1000+(i-11799-1)
   END DO
 END IF

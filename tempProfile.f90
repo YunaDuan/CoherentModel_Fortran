@@ -7,14 +7,16 @@ Subroutine TempProfile(Ts,G,H,zh,M,temperature)
 Use VariDefine
 Implicit None
 
-REAL,Intent(in)::Ts,G,H,M
-REAL,Dimension(Layer_Num),Intent(in)::zh
-REAL,Dimension(Layer_Num),Intent(out)::temperature
-
-REAL,Dimension(Layer_Num)::erf1
+REAL::Ts,G,H,M
+REAL,Dimension(:)::zh,temperature
+REAL,Pointer,Dimension(:)::erf1
 REAL,Parameter::kappa=2.70!thermal conductivity
 REAL,Parameter::k=45      !thermal diffusivity
 REAL::q,b,coef,erf2
+Integer::Nl
+
+Nl=size(Zh,1)
+allocate(erf1(Nl))
 
 q=sqrt(M/2/k/H)
 b=sqrt(PI)/2/kappa
