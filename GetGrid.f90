@@ -34,7 +34,7 @@ IF(H>99.99 .AND. H<=999) THEN
   END DO
 END IF
 
-IF(H>999) THEN 
+IF(H>999) THEN
   DO i=1,10000
     z(i)=(i-1)*0.01
   END DO

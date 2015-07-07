@@ -17,7 +17,6 @@
 Subroutine DensityRealization(z,std,lc,Layer_Num,N,seed,rhoR)
 
 Implicit None
-
 Real,Dimension(Layer_Num),Intent(in) :: z
 Real,Intent(in)::std,lc
 Integer,Intent(in)::N,seed,Layer_Num

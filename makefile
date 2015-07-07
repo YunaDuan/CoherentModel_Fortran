@@ -4,7 +4,7 @@
 #  "$@" refers to the filenames of all prerequisites, separated by spaces
 #  "-fcheck=all" does run-time checks on array bounds, args, etc.
 
-#The compiler
+#F90=gfortran-mp-4.6
 FC = gfortran
 #Flags for debugging
 FCFLAGS =-g -Wall -Wextra -fcheck=all
@@ -25,7 +25,6 @@ testnoise:mvnrnd.o
 testnoise:cholesky.o
 testnoise:rand_normal.o
 
-#general rules
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
 %.o: %.f90
@@ -33,8 +32,6 @@ testnoise:rand_normal.o
 
 %.o: %.F90
 		$(FC) $(FCFLAGS) -c $<
-
-# Utility targets
 .PHONY: clean veryclean
 clean:
 	rm -f *.o *.mod
