@@ -29,7 +29,7 @@ IF(H>99.99 .AND. H<=999) THEN
     z(i)=(i-1)*0.01
   END DO
   
-  DO i=10001,Nly
+  DO i=10001,Layer_Num
     z(i)=100+(i-10000-1)*0.5
   END DO
 END IF
@@ -43,7 +43,7 @@ IF(H>999) THEN
     z(i)=100+(i-10000-1)*0.5
   END DO
 
-  DO i=11800,Nly
+  DO i=11800,Layer_Num
     z(i)=1000+(i-11799-1)
   END DO
 END IF
