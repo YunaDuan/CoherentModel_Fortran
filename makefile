@@ -12,7 +12,7 @@ FCFLAGS = -O2
 #flags forall (e.g. look for system .mod files, required in gfortran)
 FCFLAGS = -I/usr/include
 #libraries needed for linking
-LDFLAGS = 
+LDFLAGS =./lib/libblas.a ./lib/liblapack.a 
 
 # List of executables to be built within the package
 PROGRAMS = testnoise
