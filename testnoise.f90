@@ -74,7 +74,7 @@ CALL cpu_time(start)
 !CALL cholesky(sigma,T,Layer_Num)
 CALL DPOTRF('U',Layer_num,temp,Layer_num,CholFlag)
 CALL cpu_time(finish)
-print '("Time = ",f8.3," seconds.")',finish-start
+print '("Time = ",f9.3," seconds.")',finish-start
 print*, 'Cholesky Flag',CholFlag
 
 Do i=1,5

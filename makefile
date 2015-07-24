@@ -12,8 +12,8 @@ FCFLAGS = -O2
 #flags forall (e.g. look for system .mod files, required in gfortran)
 FCFLAGS = -I/usr/include
 #libraries needed for linking
-LDFLAGS =./lib/libblas.a ./lib/liblapack.a 
-
+#LDFLAGS =./OpenBlas-0.2.14/libopenblas.a ./lib/liblapack.a 
+LDFLAGS=./lib/libopenblas.a
 # List of executables to be built within the package
 PROGRAMS = testnoise
 # "make" builds all
@@ -21,9 +21,7 @@ all: $(PROGRAMS)
 
 #the rules for programs
 testnoise:GetLayerNumber.o
-testnoise:GetGrid.o
-testnoise:mvnrnd.o
-testnoise:cholesky.o
+testnoise:getgrid.o
 testnoise:rand_normal.o
 
 %: %.o
