@@ -16,7 +16,6 @@ Implicit None
 REAL,Intent(in)::H
 Integer,Intent(out)::Layer_Num
 
-!Layer_Num is defined in common module VariDefine
 IF(H<=99.99) THEN
    Layer_Num=INT(H/0.01)+1
 END IF

@@ -14,20 +14,20 @@ FCFLAGS = -I/usr/include
 #libraries needed for linking
 LDFLAGS=./lib/libopenblas.a
 # List of executables to be built within the package
-PROGRAMS = RunCoherentModel_v1
+PROGRAMS = test2
 # "make" builds all
 all: $(PROGRAMS)
 
 #the rules for programs
-RunCoherentModel_v1:GetLayerNumber.o
-RunCoherentModel_v1:GetGrid.o
-RunCoherentModel_v1:TempProfile.o
-RunCoherentModel_v1:DensityRealization.o
-RunCoherentModel_v1:CoherentTb.o
+test2:GetLayerNumber.o
+test2:GetGrid.o
+test2:TempProfile.o
+test2:DensityRealization.o
+#RunCoherentModel_v1:CoherentTb.o
 #RunCoherentModel_v1:WriteOutput.o
-RunCoherentModel_v1:rand_normal.o
-RunCoherentModel_v1:VariDefine.o
-RunCoherentModel_v1.o:VariDefine.o
+test2:rand_normal.o
+test2:VariDefine.o
+test2.o:VariDefine.o
 
 %: %.o
 	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)

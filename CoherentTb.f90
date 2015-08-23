@@ -1,28 +1,38 @@
-!Calculation of the Brightness Temperature with the coherent model.
-!Based on Alexander's Matlab code
-!Yuna Duan May 8th
-!Input: temperature [K]; density [kgm-3] 
-!       z denpth of the layer [m]
-!Note:the defination of Nl is different with the matlab version for 
-!reasons I don't remember now.
+!Subroutine to Calculate Brightness Temperature with the coherent model.
+!Based on Alexandra's Matlab code
+!*******************************************************************
+!Input:  1.Array contains the depth of each layer - z [m]
+!        2.Density profile - density [kgm-3] 
+!        3.Temperature profile - temp [K]
+!        4.The number of frequency bands - f
+!        5.The number of incidence angle - q
+!
+!Output: 1.Bright temperature of horizontal polarization - TbH
+!        2.Bright temperature of Vertical polarization - TbV
+!
+!**************************************************************************
 
-Subroutine CoherentTb(z,density,temp,TbH,TbV)
+!Yuna Duan May 8th
+
+
+Subroutine CoherentTb(z,density,temp,LayerNum,TbH,TbV,f,q)
 
 Use VariDefine
 Implicit None
 
-REAL,Dimension(:)::temp,density,z!Input
-REAL,Dimension(3,13)::TbH,TbV !Output
+Integer,Intent(in)::LayerNum,f,q
+REAL,Dimension(LayerNum),Intent(in)::temp,density,z
+REAL,Dimension(q,f),Intent(Out)::TbH,TbV
 
 ! Varibale define
-REAL,Dimension(3):: theta_p
+REAL,Dimension(q):: theta_p
 Integer:: i,j,k,Nl
 REAL :: k0,kx,kz0
 REAL,Pointer,Dimension(:)::d,d1,klz_p,klz_pp,fv,eps_p_reff,thet,alpha,beta,&
 eps_pp_ice,eps_pp_reff 
 COMPLEX,Pointer,Dimension(:)::eps_eff,eps_reff,kl,klz,AA,BB,CC,DD
 COMPLEX,Pointer,Dimension(:,:):: mat
-COMPLEX:: V_hl(2,2),V_vl(2,2),A_B(2,1),C_D(2,1),Tb_h(3,13),Tb_v(3,13)
+COMPLEX:: V_hl(2,2),V_vl(2,2),A_B(2,1),C_D(2,1),Tb_h(q,f),Tb_v(q,f)
 COMPLEX::T_h,T_v,r_hl,r_vl
 REAL,Parameter::b=1.0/3
 REAL,parameter::eps_h=0.9974,eps_s=3.215
@@ -34,7 +44,7 @@ REAL,Parameter::eps_pp_bot= 1.0e-4
 COMPLEX,Parameter :: eps_bot=(3.17,1.0e-4)
 Complex::K_bot,kz_bot,r_h,r_v
 
-Nl=Size(z,1)
+Nl=LayerNum
 
 !Allocate arries
 Allocate(d(Nl-1),d1(Nl-1),fv(Nl), eps_p_reff(Nl),alpha(Nl),beta(Nl))
@@ -60,8 +70,8 @@ End If
 thet=300/temp-1
 alpha=(0.00504+0.0062*thet)*Exp(-22.1*thet)
 
-Do i=1,13
-  Do j=1,3
+Do i=1,f
+  Do j=1,q
        K0=2.0*PI/(3.0e8)*frequency(i)! Electromagnetic wavenumber
        kx=k0*sin(theta_p(j))!horizontal component of the wavenumber
        kz0=sqrt(k0**2-kx**2)
@@ -110,6 +120,7 @@ Do i=1,13
             r_v=(r_v*exp((0,1)*2*Klz(k+1)*(d(k+1)-d(k)))+r_vl)/(r_v*&
                 exp((0,1)*2*Klz(k+1)*(d(k+1)-d(k)))*r_vl+1);
         End Do
+
         r_hl=(Kz0-Klz(1))/(Kz0+Klz(1))
         r_vl=(eps_reff(1)*Kz0-Klz(1))/(eps_reff(1)*Kz0+Klz(1))
 
@@ -136,12 +147,12 @@ Do i=1,13
         V_vl=1.0/2.0*K0/Kl(1)*(1+eps_reff(1)*Kz0/Klz(1))*mat
         deallocate(mat)
 
-        allocate(mat(2,1))
+        Allocate(mat(2,1))
         mat(1,1)=r_h;mat(2,1)=1.0
         A_B=matmul(V_hl,mat)
         mat(1,1)=r_v
         C_D=matmul(V_vl,mat)
-        deallocate(mat)
+        Deallocate(mat)
 
         AA(1)=A_B(1,1)*exp((0,1)*Klz(1)*d(1))
         BB(1)=A_B(2,1)*exp((0,-1)*Klz(1)*d(1))
@@ -149,12 +160,13 @@ Do i=1,13
         DD(1)=C_D(2,1)*exp((0,-1)*Klz(1)*d(1))
         
         ! The other layers
+        
         Do k=1,Nl-2
            r_hl=(Klz(k+1)-Klz(k))/(Klz(k+1)+Klz(k))
            r_vl=(eps_reff(k)*Klz(k+1)-eps_reff(k+1)*Klz(k))/(eps_reff(k)&
            *Klz(k+1)+eps_reff(k+1)*Klz(k));
            
-           allocate(mat(2,2))
+           Allocate(mat(2,2))
            mat(1,1)=exp((0,-1)*Klz(k+1)*(d(k+1)-d(k)))
            mat(2,1)=r_hl*exp((0,1)*Klz(k+1)*(d(k+1)-d(k)))
            mat(1,2)=r_hl*exp((0,-1)*Klz(k+1)*(d(k+1)-d(k)))
@@ -174,7 +186,8 @@ Do i=1,13
            CC(k+1)=C_D(1,1)*exp((0,1)*Klz(k+1)*d(k+1))      
            DD(k+1)=C_D(2,1)*exp((0,-1)*Klz(k+1)*d(k+1)) 
          End Do
-         deallocate(mat)
+         Deallocate(mat)
+
          T_h=(BB(Nl-1)*exp((0,1)*Klz(Nl-1)*d(Nl-1))-AA(Nl-1)*&
          exp((0,-1)*Klz(Nl-1)*d(Nl-1)))*Klz(Nl-1)/Kz_bot&
          *exp((0,-1)*Kz_bot*d(Nl-1))
@@ -209,4 +222,4 @@ End Do
 TbH = REAL(real(Tb_h))
 TbV = REAL(real(Tb_v))
 
-End Subroutine CoherentTb
+End Subroutine 

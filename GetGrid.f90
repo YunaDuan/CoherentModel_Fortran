@@ -1,4 +1,5 @@
 !Get grid the layer scheme for a specific ice sheet yhickness
+!Layer thickness setting can be found at GetLayerNumber.f90
 !*************************************************************
 !Input: Ice shet thickness- H [m]
 !       Number of layers-Layer_num

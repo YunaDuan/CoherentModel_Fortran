@@ -21,7 +21,7 @@ REAL,Parameter::p3=38.2273!anomaly parameter
 
 !open(20,File='dat/H.dat',Status='old')!!Icesheet thickness
 !Read(20,*)H
-H=1000
+H=613.7
 CALL GetLayerNumber(H,Layer_Num)
 print*,layer_num
 Allocate(z(Layer_Num),Rnd(N*Layer_Num))
@@ -61,6 +61,9 @@ sigma=sigma*c
 allocate(temp(Layer_num,Layer_num))
 temp=sigma
 
+do i=1,layer_num
+        print*,sigma(i,1:5)
+end do
 
 Do i=1,N
   RhoR(i,:)=rhobar(:,1)
