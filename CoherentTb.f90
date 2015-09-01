@@ -30,8 +30,8 @@ Integer:: i,j,k,Nl
 REAL :: k0,kx,kz0
 REAL,Pointer,Dimension(:)::d,d1,klz_p,klz_pp,fv,eps_p_reff,thet,alpha,beta,&
 eps_pp_ice,eps_pp_reff 
-COMPLEX,Pointer,Dimension(:)::eps_eff,eps_reff,kl,klz,AA,BB,CC,DD
-COMPLEX,Pointer,Dimension(:,:):: mat
+COMPLEX,Allocatable,Dimension(:)::eps_eff,eps_reff,kl,klz,AA,BB,CC,DD
+COMPLEX,Allocatable,Dimension(:,:):: mat
 COMPLEX:: V_hl(2,2),V_vl(2,2),A_B(2,1),C_D(2,1),Tb_h(q,f),Tb_v(q,f)
 COMPLEX::T_h,T_v,r_hl,r_vl
 REAL,Parameter::b=1.0/3
@@ -161,12 +161,13 @@ Do i=1,f
         
         ! The other layers
         
+        Allocate(mat(2,2))
         Do k=1,Nl-2
+           mat=0
            r_hl=(Klz(k+1)-Klz(k))/(Klz(k+1)+Klz(k))
            r_vl=(eps_reff(k)*Klz(k+1)-eps_reff(k+1)*Klz(k))/(eps_reff(k)&
            *Klz(k+1)+eps_reff(k+1)*Klz(k));
            
-           Allocate(mat(2,2))
            mat(1,1)=exp((0,-1)*Klz(k+1)*(d(k+1)-d(k)))
            mat(2,1)=r_hl*exp((0,1)*Klz(k+1)*(d(k+1)-d(k)))
            mat(1,2)=r_hl*exp((0,-1)*Klz(k+1)*(d(k+1)-d(k)))
